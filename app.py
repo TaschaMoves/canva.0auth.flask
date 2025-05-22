@@ -1,13 +1,13 @@
 from flask import Flask, redirect, request
 import os
 import requests
+import base64
 
 app = Flask(__name__)
 
-REDIRECT_URI = 'https://taschamoves-oauth.onrender.com/callback'
-
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+REDIRECT_URI = 'https://taschamoves-oauth.onrender.com/callback'
 
 @app.route('/')
 def home():
@@ -25,16 +25,25 @@ def login():
 @app.route('/callback')
 def callback():
     code = request.args.get('code')
+
+    credentials = f"{CLIENT_ID}:{CLIENT_SECRET}"
+    encoded_credentials = base64.b64encode(credentials.encode()).decode()
+
+    headers = {
+        "Authorization": f"Basic {encoded_credentials}",
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
+
     token_response = requests.post(
         'https://www.canva.com/oauth/token',
         data={
             'grant_type': 'authorization_code',
             'code': code,
-            'redirect_uri': REDIRECT_URI,
-            'client_id': CLIENT_ID,
-            'client_secret': CLIENT_SECRET
-        }
+            'redirect_uri': REDIRECT_URI
+        },
+        headers=headers
     )
+
     return token_response.json()
 
 @app.route('/callback/')
