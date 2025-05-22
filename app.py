@@ -27,3 +27,7 @@ def callback():
         'client_secret': CLIENT_SECRET
     })
     return token_response.json()
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
